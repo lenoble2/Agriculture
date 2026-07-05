@@ -2,19 +2,47 @@ const express = require('express');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const multer = require('multer');
+require('dotenv').config(); 
 
 const app = express();
-const PORT = 8082;
+const PORT = process.env.PORT || 8082;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
-app.use('/uploads', express.static('uploads')); // Permet l'accès aux images CNI
+app.use('/uploads', express.static('uploads')); 
 
 // Configuration base de données
-const dbConfig = { host: '127.0.0.1', user: 'root', password: '', database: 'agriculture_db', port: 3306 };
+// ... au début de votre fichier, juste avant de créer dbConfig
+console.log("DEBUG: DB_HOST est", process.env.DB_HOST);
+console.log("DEBUG: DB_USER est", process.env.DB_USER);
+
+// Configuration base de données
+const dbConfig = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306,
+    ssl: { rejectUnauthorized: false }, 
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+
+// Création du pool de connexion
 const db = mysql.createPool(dbConfig);
+
+// Test de connexion immédiat au démarrage
+db.getConnection()
+    .then(connection => {
+        console.log("Connexion à la base de données Aiven réussie !");
+        connection.release();
+    })
+    .catch(err => {
+        console.error("Erreur de connexion à la base de données :", err.message);
+    });
 
 // Configuration Multer pour les images
 const storage = multer.diskStorage({
@@ -25,33 +53,35 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+
+
 // Initialisation des tables
 async function initialiserBaseDeDonnees() {
     const tableHierarchie = `CREATE TABLE IF NOT EXISTS marches_hierarchie (
-        id INT AUTO_INCREMENT PRIMARY KEY, 
-        nom VARCHAR(100), 
-        type ENUM('ZONE', 'RELAIS', 'SOUS_MARCHE'), 
-        parent_id INT, 
-        code VARCHAR(50), 
-        ville VARCHAR(100), 
-        quartier VARCHAR(100), 
-        capacite_totale VARCHAR(50), 
-        gestionnaire VARCHAR(100), 
-        marchandise_entree VARCHAR(100), 
-        quantite_entree VARCHAR(50), 
-        date_entree DATETIME, 
-        marchandise_sortie VARCHAR(100), 
-        quantite_sortie VARCHAR(50), 
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nom VARCHAR(100),
+        type ENUM('ZONE', 'RELAIS', 'SOUS_MARCHE'),
+        parent_id INT,
+        code VARCHAR(50),
+        ville VARCHAR(100),
+        quartier VARCHAR(100),
+        capacite_totale VARCHAR(50),
+        gestionnaire VARCHAR(100),
+        marchandise_entree VARCHAR(100),
+        quantite_entree VARCHAR(50),
+        date_entree DATETIME,
+        marchandise_sortie VARCHAR(100),
+        quantite_sortie VARCHAR(50),
         date_sortie DATETIME
     )`;
-    
+
     const tableHistorique = `CREATE TABLE IF NOT EXISTS historique_modifications (
-        id INT AUTO_INCREMENT PRIMARY KEY, 
-        marche_id INT, 
-        marchandise_entree VARCHAR(100), 
-        quantite_entree VARCHAR(50), 
-        marchandise_sortie VARCHAR(100), 
-        quantite_sortie VARCHAR(50), 
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        marche_id INT,
+        marchandise_entree VARCHAR(100),
+        quantite_entree VARCHAR(50),
+        marchandise_sortie VARCHAR(100),
+        quantite_sortie VARCHAR(50),
         date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
@@ -71,13 +101,25 @@ async function initialiserBaseDeDonnees() {
         num_recruteur VARCHAR(50)
     )`;
 
+    // Table ajoutée pour corriger l'erreur ER_NO_TABLE_FOUND
+    const tableCodes = `CREATE TABLE IF NOT EXISTS codes_recruteurs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tel VARCHAR(20) NOT NULL,
+        code VARCHAR(50) NOT NULL,
+        UNIQUE(tel)
+    )`;
+
     try {
         await db.execute(tableHierarchie);
         await db.execute(tableHistorique);
         await db.execute(tableClients);
+        await db.execute(tableCodes);
         console.log("Tables vérifiées/créées avec succès.");
-    } catch (err) { console.error("Erreur d'initialisation :", err); }
+    } catch (err) { 
+        console.error("Erreur d'initialisation :", err); 
+    }
 }
+
 
 app.listen(PORT, async () => {
     console.log(`Serveur démarré sur http://localhost:${PORT}`);
