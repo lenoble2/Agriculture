@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Administrateur</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo { width: 120px; margin-bottom: 20px; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #a93226; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="eagri.jpg" alt="Logo e-agri" class="logo">
+        <h2>Accès Administrateur</h2>
+
+        <input type="password" id="password" placeholder="Mot de passe">
+
+        <button onclick="seConnecterAdmin()">Se connecter</button>
+    </div>
+
+    <script>
+        function seConnecterAdmin() {
+            const password = document.getElementById('password').value;
+
+            fetch('/api/login-admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    // Redirection vers accueil.html après succès
+                    window.location.href = 'accueil.html';
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                alert("Erreur de connexion au serveur.");
+            });
+        }
+    </script>
+</body>
+</html>

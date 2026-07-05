@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier le marché</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        section { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        h3 { background-color: #2e7d32; color: white; padding: 5px; margin-top: 0; border-radius: 5px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: inline-block; width: 180px; font-weight: bold; }
+        input { padding: 5px; width: 250px; }
+        button { padding: 10px 20px; background-color: #2e7d32; color: white; border: none; cursor: pointer; }
+        .filter-container { margin-bottom: 20px; padding: 10px; border: 1px solid #eee; background: white; }
+        .filter-btn { padding: 8px 15px; margin-right: 5px; cursor: pointer; border: 1px solid #ccc; background-color: #e8f5e9; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="filter-container">
+        <strong>Navigation par Zones :</strong><br><br>
+        <button class="filter-btn" onclick="window.location.href='zone.html?z=Nord'">Zone Nord</button>
+        <button class="filter-btn" onclick="window.location.href='zone.html?z=Sud'">Zone Sud</button>
+        <button class="filter-btn" onclick="window.location.href='zone.html?z=Centre'">Zone Centre</button>
+        <button class="filter-btn" onclick="window.location.href='zone.html?z=Ouest'">Zone Ouest</button>
+        <button class="filter-btn" onclick="window.location.href='zone.html?z=Est'">Zone Est</button>
+    </div>
+
+    <h2 id="titre-modif">Marché</h2>
+
+    <form action="/modifier-marche" method="POST">
+        <section>
+            <h3>Informations du Marché</h3>
+            <input type="hidden" name="code" id="code-input">
+
+            <div class="form-group"><label>Ville :</label> <input type="text" id="ville-display" name="ville" readonly></div>
+            <div class="form-group"><label>Nom du Marché :</label> <input type="text" id="nom-input" name="nom" required></div>
+            <div class="form-group"><label>Localité :</label> <input type="text" id="localite-input" name="localite"></div>
+            <div class="form-group"><label>Capacité (tonnes) :</label> <input type="number" id="capacite-input" name="capacite"></div>
+            <div class="form-group"><label>Gestionnaire :</label> <input type="text" id="gestionnaire-input" name="gestionnaire"></div>
+        </section>
+
+        <button type="submit">Enregistrer les modifications</button>
+        <a href="javascript:history.back()" style="margin-left: 10px; text-decoration: none; color: #d32f2f;">Annuler</a>
+    </form>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+
+        if (code) {
+            fetch(`/api/marche/${code}`)
+                .then(res => res.json())
+                .then(m => {
+                    document.getElementById('code-input').value = m.code || '';
+                    document.getElementById('ville-display').value = m.ville || '';
+                    document.getElementById('nom-input').value = m.nom || '';
+                    document.getElementById('localite-input').value = m.localite || '';
+                    document.getElementById('capacite-input').value = m.capacite || '';
+                    document.getElementById('gestionnaire-input').value = m.gestionnaire || '';
+                    document.getElementById('titre-modif').textContent = "Marché : " + (m.nom || 'Inconnu');
+                })
+                .catch(err => console.error("Erreur chargement :", err));
+        }
+    </script>
+</body>
+</html>

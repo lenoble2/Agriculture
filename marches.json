@@ -1,0 +1,26 @@
+[
+  {
+    "code": "M6236",
+    "nom": "BOTI",
+    "ville": "Abengourou",
+    "localite": "DIVO ",
+    "capacite": "22",
+    "gestionnaire": "TIERY"
+  },
+  {
+    "code": "M8940",
+    "nom": "FLETIR",
+    "ville": "Abengourou",
+    "localite": "YAO ",
+    "capacite": "77",
+    "gestionnaire": "À définir"
+  },
+  {
+    "code": "23-860",
+    "nom": "RAPPORT ",
+    "quartier": "SOGBO",
+    "capacite": "25",
+    "gestionnaire": "DAPE",
+    "zone": "Est"
+  }
+]

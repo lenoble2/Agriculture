@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Codes</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f7f6; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+        }
+        h2 { color: #2c3e50; margin-bottom: 1.5rem; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 1rem; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #27ae60; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #219150; }
+        #resultat { margin-top: 1.5rem; font-weight: 600; color: #34495e; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Générateur de Code</h2>
+        <input type="text" id="tel" placeholder="Numéro du recruteur" required>
+        <button onclick="genererCode()">Générer et Enregistrer</button>
+        <p id="resultat"></p>
+    </div>
+
+    <script>
+        function genererCode() {
+            const tel = document.getElementById('tel').value;
+            if (!tel) {
+                alert("Veuillez entrer un numéro de téléphone.");
+                return;
+            }
+            
+            const code = Math.floor(1000 + Math.random() * 9000).toString();
+            
+            fetch('/api/generer-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tel, code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('resultat').innerText = data.message + " | Code : " + code;
+            })
+            .catch(err => {
+                document.getElementById('resultat').innerText = "Erreur lors de l'enregistrement.";
+            });
+        }
+    </script>
+</body>
+</html>

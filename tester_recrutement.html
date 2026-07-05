@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Test Complet de Recrutement</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; background-color: #f4f7f6; font-size: 14px; }
+
+        .header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .logo { width: 60px; height: auto; border-radius: 8px; }
+
+        form { display: flex; flex-direction: column; gap: 8px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1em; width: 100%; box-sizing: border-box; }
+        label { font-size: 0.8em; color: #666; margin-top: 2px; font-weight: bold; }
+
+        button { padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; margin-top: 5px; }
+        
+        #message { margin-top: 10px; text-align: center; font-weight: bold; padding: 10px; border-radius: 6px; }
+        .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        
+        .info-recruteur { color: #555; background: #e8f5e9; padding: 8px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="eagri.jpg" alt="Logo" class="logo">
+        <h2>Recrutement</h2>
+    </div>
+
+    <div class="info-recruteur">Connecté : <strong id="display-recruteur">...</strong></div>
+
+    <form id="recrutementForm">
+        <input type="hidden" name="num_recruteur" id="hidden-recruteur">
+
+        <input type="number" name="marche_id" placeholder="ID Marché" required>
+        <input type="text" name="nom_prenoms" placeholder="Nom et Prénoms" required>
+        <input type="text" name="cni" placeholder="N° CNI">
+        <input type="text" name="tel" placeholder="N° Téléphone">
+        <input type="text" name="localite" placeholder="Localité">
+
+        <label>Photo CNI (Recto/Verso) :</label>
+        <input type="file" name="cni_file" accept="image/*">
+
+        <input type="text" name="variete" placeholder="Variété de culturel">
+        <input type="text" name="dimension" placeholder="Dimension champs">
+
+        <label>Début Production :</label>
+        <input type="date" name="debut_prod">
+
+        <label>Fin Production :</label>
+        <input type="date" name="fin_prod">
+
+        <input type="number" step="0.01" name="estimation" placeholder="Estimation (tonnes)">
+        <button type="submit">Enregistrer le client</button>
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const telRecruteur = params.get('recruteur');
+        const msgDiv = document.getElementById('message');
+
+        if (telRecruteur) {
+            document.getElementById('display-recruteur').innerText = telRecruteur;
+            document.getElementById('hidden-recruteur').value = telRecruteur;
+        } else {
+            document.getElementById('display-recruteur').innerText = "Non identifié";
+        }
+
+        document.getElementById('recrutementForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/api/recruter-client', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                msgDiv.innerText = result.message || result.error;
+                
+                if (response.status === 201) {
+                    msgDiv.className = 'success';
+                    const tempTel = document.getElementById('hidden-recruteur').value;
+                    e.target.reset();
+                    document.getElementById('hidden-recruteur').value = tempTel;
+                } else {
+                    msgDiv.className = 'error';
+                }
+            } catch (err) {
+                msgDiv.innerText = "Erreur de connexion au serveur.";
+                msgDiv.className = 'error';
+            }
+        };
+    </script>
+</body>
+</html>

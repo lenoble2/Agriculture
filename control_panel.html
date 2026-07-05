@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panneau de Contrôle - eAgri</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .table-container { margin-bottom: 40px; background: white; padding: 20px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #1e8449; color: white; }
+        .row-petit-marche { background-color: #fff9c4; } /* Jaune pour 3e génération */
+    </style>
+</head>
+<body>
+
+    <h1>Panneau de Contrôle</h1>
+
+    <!-- Section Marchés -->
+    <div class="table-container">
+        <h2>Marchés (Hierarchie)</h2>
+        <table id="table-marches">
+            <thead>
+                <tr><th>ID</th><th>Nom</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Section Clients -->
+    <div class="table-container">
+        <h2>Liste Totale des Clients</h2>
+        <table id="table-clients">
+            <thead>
+                <tr><th>ID</th><th>Nom & Prénoms</th><th>Marché ID</th><th>Tel</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Charger les Marchés
+        fetch('/api/marches')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#table-marches tbody');
+                tbody.innerHTML = ''; 
+                data.forEach(m => {
+                    // Applique la classe jaune si le type est "SOUS_MARCHE"
+                    const rowClass = m.type === 'SOUS_MARCHE' ? 'class="row-petit-marche"' : '';
+                    tbody.innerHTML += `<tr ${rowClass}>
+                        <td>${m.id}</td>
+                        <td>${m.nom}</td>
+                    </tr>`;
+                });
+            });
+
+        // Charger les Clients
+        fetch('/api/tous-les-clients')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#table-clients tbody');
+                tbody.innerHTML = '';
+                data.forEach(c => {
+                    tbody.innerHTML += `<tr>
+                        <td>${c.id}</td>
+                        <td>${c.nom_prenoms}</td>
+                        <td>${c.marche_id || 'N/A'}</td>
+                        <td>${c.tel || 'N/A'}</td>
+                    </tr>`;
+                });
+            });
+    </script>
+</body>
+</html>

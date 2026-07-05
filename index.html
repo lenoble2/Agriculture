@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Agri Accueil</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        /* Haut de page */
+        .top-header {
+            width: 100%;
+            background-color: white;
+            padding: 15px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .logo-eagri { width: 70px; }
+        .armoiries { width: 45px; }
+                                                                                                                                                                  /* Conteneur texte + drapeau centré */
+        .center-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .ministry-text {
+            font-size: 0.65em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .flag-bar {
+            height: 4px;
+            width: 80px;
+            display: flex;
+            margin-top: 6px;
+        }
+        .orange { background-color: #FF8C00; flex: 1; }
+        .white { background-color: #FFFFFF; flex: 1; border-left: 1px solid #eee; border-right: 1px solid #eee; }
+        .green { background-color: #009E60; flex: 1; }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .page-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .main-image {
+            width: 80%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-connexion {
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 60%;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+        }
+        .btn-connexion:hover { background-color: #219150; }
+
+        /* Style bouton administrateur mis à jour */
+        .btn-admin {
+            border: 2px solid #009E60; /* Couleur verte de 1000366600.jpg */
+            color: #009E60;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 18px; /* Écriture agrandie */
+            font-weight: bold;
+            cursor: pointer;
+            width: 60%;
+            text-decoration: none;
+            display: inline-block;
+            background-color: transparent;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <img src="eagri.jpg" alt="Logo E-Agri" class="logo-eagri">
+        <div class="center-header">
+            <div class="ministry-text">MINISTÈRE DE L'AGRICULTURE,<br>DU DÉVELOPPEMENT RURAL ET<br>DES PRODUCTIONS VIVRIÈRES</div>
+            <div class="flag-bar">
+                <div class="orange"></div>
+                <div class="white"></div>
+                <div class="green"></div>
+            </div>
+        </div>
+        <img src="Armoiries.jpg" alt="Armoiries" class="armoiries">
+    </div>
+
+    <div class="container">
+        <div class="page-title">Plate-forme Agents Recruteurs</div>
+        <img src="mc.jpg" alt="Illustration" class="main-image">
+
+        <a href="login_recruteur.html" class="btn-connexion">Se connecter</a>
+
+        <br>
+        <a href="login_admin.html" class="btn-admin">Administrateur</a>
+    </div>
+
+</body>
+</html>
