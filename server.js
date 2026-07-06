@@ -44,6 +44,17 @@ db.getConnection()
         console.error("Erreur de connexion à la base de données :", err.message);
     });
 
+
+// ... votre code existant
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('Service Worker enregistré avec succès !'))
+    .catch((err) => console.log('Erreur enregistrement:', err));
+}
+
+
+
+
 // Configuration Multer pour les images
 const storage = multer.diskStorage({
     destination: './uploads/cni/',
