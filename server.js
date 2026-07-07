@@ -96,6 +96,7 @@ async function initialiserBaseDeDonnees() {
         date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
+    // Table clients avec tous les nouveaux champs
     const tableClients = `CREATE TABLE IF NOT EXISTS clients (
         id INT AUTO_INCREMENT PRIMARY KEY,
         marche_id INT,
@@ -103,8 +104,16 @@ async function initialiserBaseDeDonnees() {
         cni VARCHAR(50),
         tel VARCHAR(20),
         localite VARCHAR(100),
+        residence VARCHAR(100),
+        gps VARCHAR(100),
+        nationalite VARCHAR(100),
+        langue VARCHAR(100),
         cni_file VARCHAR(255),
+        cni_verso VARCHAR(255),
+        photo_id VARCHAR(255),
+        speculation VARCHAR(100),
         variete VARCHAR(100),
+        experience INT,
         dimension VARCHAR(50),
         debut_prod DATE,
         fin_prod DATE,
@@ -112,7 +121,6 @@ async function initialiserBaseDeDonnees() {
         num_recruteur VARCHAR(50)
     )`;
 
-    // Table ajoutée pour corriger l'erreur ER_NO_TABLE_FOUND
     const tableCodes = `CREATE TABLE IF NOT EXISTS codes_recruteurs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         tel VARCHAR(20) NOT NULL,
@@ -125,11 +133,48 @@ async function initialiserBaseDeDonnees() {
         await db.execute(tableHistorique);
         await db.execute(tableClients);
         await db.execute(tableCodes);
-        console.log("Tables vérifiées/créées avec succès.");
-    } catch (err) { 
-        console.error("Erreur d'initialisation :", err); 
+        console.log("Toutes les tables ont été vérifiées/créées avec succès.");
+    } catch (err) {
+        console.error("Erreur d'initialisation :", err);
     }
 }
+
+// Route API RECRUTER-CLIENT avec gestion de fichiers multiples
+const cpUpload = upload.fields([
+    { name: 'cni_file', maxCount: 1 },
+    { name: 'cni_verso', maxCount: 1 },
+    { name: 'photo_id', maxCount: 1 }
+]);
+
+app.post('/api/recruter-client', cpUpload, async (req, res) => {
+    try {
+        const { 
+            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
+            speculation, variete, experience, dimension, debut_prod, fin_prod, estimation, num_recruteur 
+        } = req.body;
+
+        const cni_file = req.files['cni_file'] ? `/uploads/cni/${req.files['cni_file'][0].filename}` : null;
+        const cni_verso = req.files['cni_verso'] ? `/uploads/cni/${req.files['cni_verso'][0].filename}` : null;
+        const photo_id = req.files['photo_id'] ? `/uploads/cni/${req.files['photo_id'][0].filename}` : null;
+
+        const sql = `INSERT INTO clients (
+            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
+            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension, 
+            debut_prod, fin_prod, estimation, num_recruteur
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        await db.execute(sql, [
+            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
+            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension, 
+            debut_prod, fin_prod, estimation, num_recruteur
+        ]);
+
+        res.status(201).json({ message: "Client enregistré avec succès !" });
+    } catch (err) { 
+        res.status(500).json({ error: "Erreur serveur : " + err.message }); 
+    }
+});
+
 
 
 app.listen(PORT, async () => {

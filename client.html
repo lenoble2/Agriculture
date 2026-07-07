@@ -5,24 +5,30 @@
     <title>Gestion des Clients - Marché</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px; background-color: #ffffff; border-radius: 10px; border-bottom: 3px solid #27ae60; }
-        .logo-header { width: 120px; display: block; }          
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px; }
+        .logo-header { width: 120px; display: block; }
         h1 { color: #2c3e50; text-align: center; }
-        .table-container { width: 100%; overflow-x: auto; margin-top: 20px; background: white; padding: 10px; border-radius: 5px; }                                             
-        .client-table { width: 100%; border-collapse: collapse; min-width: 1200px; }
-        .client-table th { background-color: #1e8449; color: #fff; padding: 15px; text-align: left; font-size: 1em; border: 1px solid #ddd; }
-        .client-table td { padding: 12px; border: 1px solid #ddd; font-size: 0.95em; }
-        .btn-retour { background: #95a5a6; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-bottom: 10px; }                                              
-        .btn-delete { color: red; font-weight: bold; cursor: pointer; border: none; background: none; font-size: 1.2em; }                                                   
+        /* Style ajouté pour le numéro du recruteur */
+        .info-recruteur { text-align: center; font-weight: bold; color: #1e8449; margin-bottom: 10px; }
+        .table-container { width: 100%; overflow-x: auto; margin-top: 20px; background: white; padding: 10px; border-radius: 8px; }
+        .client-table { width: 100%; border-collapse: collapse; min-width: 1500px; }
+        .client-table th { background-color: #1e8449; color: #fff; padding: 15px; text-align: left; font-size: 0.9em; border: 1px solid #ddd; }
+        .client-table td { padding: 12px; border: 1px solid #ddd; font-size: 0.85em; }
+        .btn-retour { background: #95a5a6; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-bottom: 10px; border-radius: 4px; }
+        .btn-delete { color: red; font-weight: bold; cursor: pointer; border: none; background: none; font-size: 1.2em; }
     </style>
 </head>
 <body>
     <div class="header-container">
         <img src="eagri.jpg" alt="Logo e-agri" class="logo-header">
     </div>
+    
+    <!-- Zone d'affichage du numéro recruteur -->
+    <div class="info-recruteur" id="affichage-recruteur"></div>
+    
     <button class="btn-retour" onclick="window.history.back()">Retour</button>
 
-    <h1>Liste des Clients du Marché</h1>                
+    <h1>Liste des Clients du Marché</h1>
     <div class="table-container">
         <table class="client-table" id="table-clients">
             <thead>
@@ -32,13 +38,19 @@
                     <th>N° CNI</th>
                     <th>N° Tel</th>
                     <th>Localité</th>
-                    <th>CNI (Recto/Verso)</th>
-                    <th>Variété de culturel</th>
-                    <th>Dim. champs</th>
-                    <th>Debut Prodt</th>
-                    <th>Fin Prodt</th>
-                    <th>Estim (tonnes)</th>
-                    <th>N° recruteur</th>
+                    <th>Résidence</th>
+                    <th>GPS</th>
+                    <th>Nationalité</th>
+                    <th>Langue</th>
+                    <th>Fichiers</th>
+                    <th>Spéculation</th>
+                    <th>Variété</th>
+                    <th>Exp.</th>
+                    <th>Dim.</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th>Estim (T)</th>
+                    <th>Recruteur</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -51,8 +63,13 @@
     <script>
         const params = new URLSearchParams(window.location.search);
         const marcheId = params.get('marche_id');
+        const recruteur = params.get('recruteur');
 
-        // Fonction pour formater la date ISO en JJ/MM/AAAA
+        // Afficher le numéro du recruteur s'il est présent dans l'URL
+        if (recruteur) {
+            document.getElementById('affichage-recruteur').innerText = "Recruteur : " + recruteur;
+        }
+
         function formaterDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
@@ -74,8 +91,18 @@
                                 <td>${client.cni}</td>
                                 <td>${client.tel}</td>
                                 <td>${client.localite}</td>
-                                <td><a href="${client.cni_file}" target="_blank">Voir</a></td>
+                                <td>${client.residence || ''}</td>
+                                <td>${client.gps || ''}</td>
+                                <td>${client.nationalite || ''}</td>
+                                <td>${client.langue || ''}</td>
+                                <td>
+                                    <a href="${client.cni_file || '#'}" target="_blank">R</a>/
+                                    <a href="${client.cni_verso || '#'}" target="_blank">V</a>/
+                                    <a href="${client.photo_id || '#'}" target="_blank">P</a>
+                                </td>
+                                <td>${client.speculation || ''}</td>
                                 <td>${client.variete}</td>
+                                <td>${client.experience || ''}</td>
                                 <td>${client.dimension}</td>
                                 <td>${formaterDate(client.debut_prod)}</td>
                                 <td>${formaterDate(client.fin_prod)}</td>
@@ -94,7 +121,7 @@
                     .then(res => res.json())
                     .then(data => {
                         alert(data.message);
-                        chargerClients(); // Recharge la liste
+                        chargerClients();
                     })
                     .catch(err => console.error("Erreur:", err));
             }
