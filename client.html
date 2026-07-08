@@ -22,10 +22,10 @@
     <div class="header-container">
         <img src="eagri.jpg" alt="Logo e-agri" class="logo-header">
     </div>
-    
+
     <!-- Zone d'affichage du numéro recruteur -->
     <div class="info-recruteur" id="affichage-recruteur"></div>
-    
+
     <button class="btn-retour" onclick="window.history.back()">Retour</button>
 
     <h1>Liste des Clients du Marché</h1>
@@ -39,6 +39,7 @@
                     <th>N° Tel</th>
                     <th>Localité</th>
                     <th>Résidence</th>
+                    <th>Sit. Matrimoniale</th>
                     <th>GPS</th>
                     <th>Nationalité</th>
                     <th>Langue</th>
@@ -92,6 +93,7 @@
                                 <td>${client.tel}</td>
                                 <td>${client.localite}</td>
                                 <td>${client.residence || ''}</td>
+                                <td>${client.situation_matrimoniale || ''}</td>
                                 <td>${client.gps || ''}</td>
                                 <td>${client.nationalite || ''}</td>
                                 <td>${client.langue || ''}</td>

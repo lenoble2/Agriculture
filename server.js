@@ -96,8 +96,9 @@ async function initialiserBaseDeDonnees() {
         date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
-    // Table clients avec tous les nouveaux champs
-    const tableClients = `CREATE TABLE IF NOT EXISTS clients (
+
+// Table clients avec tous les nouveaux champs y compris situation matrimoniale
+const tableClients = `CREATE TABLE IF NOT EXISTS clients (
         id INT AUTO_INCREMENT PRIMARY KEY,
         marche_id INT,
         nom_prenoms VARCHAR(255),
@@ -105,6 +106,7 @@ async function initialiserBaseDeDonnees() {
         tel VARCHAR(20),
         localite VARCHAR(100),
         residence VARCHAR(100),
+        situation_matrimoniale VARCHAR(100),
         gps VARCHAR(100),
         nationalite VARCHAR(100),
         langue VARCHAR(100),
@@ -120,6 +122,7 @@ async function initialiserBaseDeDonnees() {
         estimation DECIMAL(10, 2),
         num_recruteur VARCHAR(50)
     )`;
+
 
     const tableCodes = `CREATE TABLE IF NOT EXISTS codes_recruteurs (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -146,11 +149,13 @@ const cpUpload = upload.fields([
     { name: 'photo_id', maxCount: 1 }
 ]);
 
+
+
 app.post('/api/recruter-client', cpUpload, async (req, res) => {
     try {
-        const { 
-            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
-            speculation, variete, experience, dimension, debut_prod, fin_prod, estimation, num_recruteur 
+        const {
+            marche_id, nom_prenoms, cni, tel, localite, residence, situation_matrimoniale, gps, nationalite, langue,
+            speculation, variete, experience, dimension, debut_prod, fin_prod, estimation, num_recruteur
         } = req.body;
 
         const cni_file = req.files['cni_file'] ? `/uploads/cni/${req.files['cni_file'][0].filename}` : null;
@@ -158,23 +163,22 @@ app.post('/api/recruter-client', cpUpload, async (req, res) => {
         const photo_id = req.files['photo_id'] ? `/uploads/cni/${req.files['photo_id'][0].filename}` : null;
 
         const sql = `INSERT INTO clients (
-            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
-            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension, 
+            marche_id, nom_prenoms, cni, tel, localite, residence, situation_matrimoniale, gps, nationalite, langue,
+            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension,
             debut_prod, fin_prod, estimation, num_recruteur
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         await db.execute(sql, [
-            marche_id, nom_prenoms, cni, tel, localite, residence, gps, nationalite, langue, 
-            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension, 
+            marche_id, nom_prenoms, cni, tel, localite, residence, situation_matrimoniale, gps, nationalite, langue,
+            cni_file, cni_verso, photo_id, speculation, variete, experience, dimension,
             debut_prod, fin_prod, estimation, num_recruteur
         ]);
 
         res.status(201).json({ message: "Client enregistré avec succès !" });
-    } catch (err) { 
-        res.status(500).json({ error: "Erreur serveur : " + err.message }); 
+    } catch (err) {
+        res.status(500).json({ error: "Erreur serveur : " + err.message });
     }
 });
-
 
 
 app.listen(PORT, async () => {
