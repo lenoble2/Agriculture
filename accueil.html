@@ -1,206 +1,209 @@
 <!DOCTYPE html>
-<html lang="fr">                                        
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Gestion Pyramide des Marchés</title>
-    <style>                                                     
+    <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; color: blue; font-size: 1.1em; }
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 15px 10px; border-bottom: 3px solid #27ae60; background-color: #ffffff; border-radius: 10px; }
         .header-left, .header-right { width: 150px; text-align: center; }
         .header-center { flex-grow: 1; text-align: center; }
         .logo-header { width: 120px; display: block; margin: 0 auto; }
         .armoiries-header { width: 60px; display: block; margin: 0 auto; }
-        .republique-text { font-weight: bold; font-size: 0.6em; margin: 5px 0 0 0; color: #000; white-space: nowrap; }                                                          
-        .devise-text { font-size: 0.7em; margin: 2px 0; color: #000; }                                                  
-        .titre-marche { color: #2c3e50; font-size: 2em; margin: 0; }                                                    
-        .element-item { margin: 10px auto; padding: 20px; border: 1px solid #ccc; background: white; width: 95%; max-width: 800px; border-radius: 5px; }                        
-        .btn-supp { color: red; cursor: pointer; float: right; font-weight: bold; font-size: 1.5em; }                   
+        .republique-text { font-weight: bold; font-size: 0.6em; margin: 5px 0 0 0; color: #000; white-space: nowrap; }
+        .devise-text { font-size: 0.7em; margin: 2px 0; color: #000; }
+        .titre-marche { color: #2c3e50; font-size: 2em; margin: 0; }
+        
+        .element-item { margin: 10px auto; padding: 25px; border: 1px solid #ccc; background: white; width: 95%; max-width: 1000px; border-radius: 5px; }
+        .btn-supp { color: red; cursor: pointer; float: right; font-weight: bold; font-size: 1.5em; }
         .details-marche { font-size: 1.3em; color: blue; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.8; }
         .label-noir { color: black; font-weight: bold; }
-        input, select { display: block; margin: 10px auto; width: 95%; max-width: 400px; padding: 12px; font-family: Arial, sans-serif; color: blue; font-size: 1em; }          
-        #form-container { display: none; margin: 20px auto; padding: 15px; border: 1px solid #ddd; width: 95%; max-width: 400px; background: white; }                           
-        .controls-container { display: flex; gap: 10px; margin: 0 0 10px 2.5%; }                                        
-        .btn-toggle { background: #95a5a6; color: white; padding: 10px 20px; border: none; cursor: pointer; width: auto; font-size: 1em; font-family: Arial, sans-serif; }
-        .btn-admin { background: #c0392b; color: white; padding: 10px 20px; border: none; cursor: pointer; width: auto; font-size: 1em; font-family: Arial, sans-serif; text-decoration: none; display: inline-block; }
-        .btn-code { background: #8e44ad; color: white; padding: 10px 20px; border: none; cursor: pointer; width: auto; font-size: 1em; font-family: Arial, sans-serif; text-decoration: none; display: inline-block; }
-        .btn-hist { background: #3498db; color: white; padding: 8px 15px; border: none; cursor: pointer; margin-left: 10px; font-family: Arial, sans-serif; }                   
-        .btn-client { background: #f39c12; color: white; padding: 8px 15px; border: none; cursor: pointer; margin-left: 10px; font-family: Arial, sans-serif; }
+        
+        input, select { display: block; margin: 10px auto; width: 95%; max-width: 500px; padding: 12px; font-family: Arial, sans-serif; color: blue; font-size: 1em; }
+        #form-container { display: none; margin: 20px auto; padding: 20px; border: 1px solid #ddd; width: 95%; max-width: 500px; background: white; }
+        
+        .btn-classique { 
+            background: #27ae60; color: white; padding: 10px 20px; border: none; 
+            border-radius: 10px; cursor: pointer; font-size: 1em; font-family: Arial, sans-serif; 
+            font-weight: bold; text-decoration: none; display: inline-block; transition: 0.3s;
+        }
+        .btn-classique:hover { background: #219150; }
+        
+        .controls-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px 2.5%; align-items: center; }
         .historique-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; font-size: 0.9em; }
         .historique-table th { border: 1px solid #ddd; padding: 8px; text-align: left; color: black; background-color: #f2f2f2; }
-        .historique-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }                            
+        .historique-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        #selecteur-marche { margin: 10px 0; padding: 10px; width: 300px; border-radius: 20px; }
     </style>
 </head>
 <body>
 
-
-<script>
-    (function verifierAcces() {
-        const password = prompt("Accès Administrateur requis. Entrez le mot de pas>
-        fetch('/api/login-admin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (!data.success) {
-                alert("Accès refusé !");
-                window.location.href = "login_recruteur.html";
-            }
-        })
-        .catch(() => {
-            alert("Erreur de connexion au serveur.");
-            window.location.href = "login_recruteur.html";
-        });
-    })();
-</script>
-
-
-
-
     <div class="header-container">
-        <div class="header-left">
-            <img src="eagri.jpg" alt="Logo e-agri" class="logo-header">
-        </div>                                                  
-        <div class="header-center">
-            <h1 id="titre-principal" class="titre-marche">Marchés Gros</h1>                                                                             
-        </div>
+        <div class="header-left"><img src="eagri.jpg" alt="Logo e-agri" class="logo-header"></div>
+        <div class="header-center"><h1 id="titre-principal" class="titre-marche">Marchés Gros</h1></div>
         <div class="header-right">
             <p class="republique-text">RÉPUBLIQUE DE CÔTE D'IVOIRE</p>
             <img src="Armoiries.jpg" alt="Armoiries" class="armoiries-header">
             <p class="devise-text">Union-Discipline-Travail</p>
-        </div>                                              
+        </div>
     </div>
 
-    <div class="controls-container">                            
-        <button id="btn-ajout" class="btn-toggle" onclick="toggleForm()">+ Ajouter un élément</button>                  
-        <a href="control_panel.html" class="btn-admin">Administrateur</a>
-        <a href="code.html" class="btn-code">Code</a>
+    <div class="controls-container">
+        <button id="btn-ajout" class="btn-classique" onclick="toggleForm()">➕ Ajouter Marchés</button>
+        <a href="control_panel.html" class="btn-classique">Administrateur</a>
+        <a href="code.html" class="btn-classique">Code</a>
+        <select id="selecteur-marche" onchange="afficherElementSelectionne(this.value)">
+            <option value="">-- Sélectionner un marché --</option>
+        </select>
     </div>
 
-    <div id="form-container">                                                   
+    <div id="form-container">
         <input type="text" id="code-input" placeholder="Code du marché">
-        <input type="text" id="nom-input" placeholder="Nom du Marché">          
+        <input type="text" id="nom-input" placeholder="Nom du Marché">
         <input type="text" id="ville-input" placeholder="Ville">
-        <input type="text" id="quartier-input" placeholder="Quartier">          
-        <input type="text" id="capacite-input" placeholder="Capacité totale (tonne)">                                                                   
-        <input type="text" id="gestionnaire-input" placeholder="Gestionnaire">                                                                          
-        <input type="text" id="marchandise-entree-input" placeholder="Marchandise stockée (ex: Riz)">                                                   
-        <input type="text" id="quantite-entree-input" placeholder="Quantité entrée (tonnes)">                                                           
-        <input type="datetime-local" id="date-entree-input">                                                            
+        <input type="text" id="quartier-input" placeholder="Quartier">
+        <!-- Champ capacité avec id pour le rendre dynamique -->
+        <input type="text" id="capacite-input" placeholder="Capacité totale (tonne)">
+        <input type="text" id="gestionnaire-input" placeholder="Gestionnaire">
+        <input type="text" id="marchandise-entree-input" placeholder="Marchandise stockée (ex: Riz)">
+        <input type="text" id="quantite-entree-input" placeholder="Quantité entrée (tonnes)">
+        <input type="datetime-local" id="date-entree-input">
         <input type="text" id="marchandise-sortie-input" placeholder="Marchandise évacuée (ex: Banane)">
         <input type="text" id="quantite-sortie-input" placeholder="Quantité sortie (tonnes)">
-        <input type="datetime-local" id="date-sortie-input">                                                            
-        <select id="type-select"></select>                      
-        <button onclick="ajouterElement()" style="width: 95%; max-width: 400px; margin: 15px auto; display: block; padding: 12px; font-family: Arial, sans-serif; font-size: 1.1em;">Enregistrer</button>
+        <input type="datetime-local" id="date-sortie-input">
+        <select id="type-select"></select>
+        <button onclick="ajouterElement()" class="btn-classique" style="width: 95%; max-width: 500px; margin: 15px auto; display: block; padding: 12px; font-size: 1.1em; cursor:pointer;">Enregistrer</button>
     </div>
 
     <div id="liste-elements"></div>
 
-    <script>                                                    
+    <script>
         const params = new URLSearchParams(window.location.search);
         const parentId = params.get('parent_id');
         const depth = parseInt(params.get('depth') || '1');
-        const titre = document.getElementById('titre-principal');               
-        const select = document.getElementById('type-select');
+        const titre = document.getElementById('titre-principal');
+        const typeSelect = document.getElementById('type-select');
         const formContainer = document.getElementById('form-container');
         const btnAjout = document.getElementById('btn-ajout');
+        const selecteur = document.getElementById('selecteur-marche');
+        const capaciteInput = document.getElementById('capacite-input');
+        let tousLesElements = [];
 
-        if (depth >= 4) {
-            btnAjout.style.display = 'none';                    
-        }                                                                       
-        
-        function toggleForm() {                                     
-            formContainer.style.display = (formContainer.style.display === 'block') ? 'none' : 'block';
-        }                                                               
-        
-        function chargerHistorique(id) {
-            fetch(`/api/historique/${id}`)                              
-            .then(res => res.json())                                
-            .then(data => {
-                    const histDiv = document.getElementById('hist-' + id);
-                    let html = '<tr><th>M. Entrée</th><th>Qté</th><th>M. Sortie</th><th>Qté</th><th>Date Modif.</th></tr>';
-                    data.forEach(row => {                                       
-                        html += `<tr><td>${row.marchandise_entree}</td><td>${row.quantite_entree}</td><td>${row.marchandise_sortie}</td><td>${row.quantite_sortie}</td><td>${row.date_modification}</td></tr>`;
-                    });
-                    histDiv.innerHTML = html;
-                });
-        }
+        if (depth >= 4) btnAjout.style.display = 'none';
 
-        function toggleHistorique(id) {
-            const hist = document.getElementById('hist-' + id);
-            if(hist.style.display === 'table') {
-                hist.style.display = 'none';                        
+        function toggleForm() {
+            // Si on ajoute un élément, on bloque la capacité si un parent existe
+            if (parentId) {
+                capaciteInput.readOnly = false;
             } else {
-                hist.style.display = 'table';
-                chargerHistorique(id);
-            }                                                                   
+                capaciteInput.readOnly = false;
+            }
+            formContainer.style.display = (formContainer.style.display === 'block') ? 'none' : 'block';
         }
-        
-        function versClients(id) {
-            window.location.href = 'client.html?marche_id=' + id;                                                       
-        }                       
-        
+
+        function afficherElementSelectionne(id) {
+            const container = document.getElementById('liste-elements');
+            container.innerHTML = '';
+            if (!id) return;
+
+            const item = tousLesElements.find(i => i.id == id);
+            if (!item) return;
+
+            // Calcul dynamique de la capacité (somme des enfants)
+            const enfants = tousLesElements.filter(e => e.parent_id == item.id);
+            const capaciteCalculee = enfants.length > 0 
+                ? enfants.reduce((sum, e) => sum + (parseFloat(e.capacite_totale) || 0), 0) 
+                : item.capacite_totale;
+
+            const btnClientHtml = item.type === 'SOUS_MARCHE' ? `<button class="btn-classique" onclick="versClients(${item.id})" style="padding: 5px 10px; font-size: 0.8em;">Liste clients</button>` : '';
+            const div = document.createElement('div');
+            div.className = 'element-item';
+            div.innerHTML = `
+                <span class="btn-supp" onclick="supprimerElement(${item.id})">X</span>
+                <strong style="font-size: 1.3em;"><a href="?parent_id=${item.id}&depth=${depth + 1}">${item.nom || 'Sans nom'}</a></strong>
+                <div class="details-marche">
+                    <span class="label-noir">Code:</span> ${item.code || 'N/A'}<br>
+                    <span class="label-noir">Ville:</span> ${item.ville || 'N/A'}<br>
+                    <span class="label-noir">Quartier:</span> ${item.quartier || 'N/A'}<br>
+                    <span class="label-noir">Capacité:</span> ${capaciteCalculee} T ${enfants.length > 0 ? '<small style="color:gray;">(Automatique)</small>' : ''}<br>
+                    <span class="label-noir">Gestionnaire:</span> ${item.gestionnaire || 'N/A'}<br>
+                    <strong style="color: red;">Stockage:</strong> ${item.marchandise_entree || 'Aucun'} (${item.quantite_entree || 0}T) - <small>${item.date_entree || 'N/A'}</small><br>
+                    <strong style="color: green;">Évacuation:</strong> ${item.marchandise_sortie || 'Aucun'} (${item.quantite_sortie || 0}T) - <small>${item.date_sortie || 'N/A'}</small><br>
+                    <button onclick="modifierElement(${item.id})" class="btn-classique" style="margin-top:15px; padding: 5px 10px; font-size: 0.8em;">Modifier</button>
+                    <button class="btn-classique" onclick="toggleHistorique(${item.id})" style="padding: 5px 10px; font-size: 0.8em;">Historique</button>
+                    ${btnClientHtml}
+                    <table id="hist-${item.id}" class="historique-table"></table>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
         function chargerElements() {
             fetch(`/api/elements?parent_id=${parentId || ''}&t=${Date.now()}`)
                 .then(res => res.json())
                 .then(data => {
-                    const container = document.getElementById('liste-elements');
-                    container.innerHTML = '';
+                    tousLesElements = data;
+                    selecteur.innerHTML = '<option value="">-- Choisir un marché --</option>';
                     data.forEach(item => {
-                        const btnClientHtml = item.type === 'SOUS_MARCHE' ? `<button class="btn-client" onclick="versClients(${item.id})">Liste clients</button>` : '';
-                        const div = document.createElement('div');                                                                      
-                        div.className = 'element-item';
-                        div.innerHTML = `                                           
-                            <span class="btn-supp" onclick="supprimerElement(${item.id})">X</span>
-                            <strong style="font-size: 1.3em;"><a href="?parent_id=${item.id}&depth=${depth + 1}">${item.nom || 'Sans nom'}</a></strong>                                             
-                            <div class="details-marche">                                
-                                <span class="label-noir">Code:</span> ${item.code || 'N/A'}<br>
-                                <span class="label-noir">Ville:</span> ${item.ville || 'N/A'}<br>                                               
-                                <span class="label-noir">Quartier:</span> ${item.quartier || 'N/A'}<br>                                         
-                                <span class="label-noir">Capacité:</span> ${item.capacite_totale || '0'} T<br>                                                          
-                                <span class="label-noir">Gestionnaire:</span> ${item.gestionnaire || 'N/A'}<br>                                 
-                                <strong style="color: red;">Stockage:</strong> ${item.marchandise_entree || 'Aucun'} (${item.quantite_entree || 0}T) - ${item.date_entree || 'N/A'}<br>                                                                                                 
-                                <strong style="color: green;">Évacuation:</strong> ${item.marchandise_sortie || 'Aucun'} (${item.quantite_sortie || 0}T) - ${item.date_sortie || 'N/A'}<br>                                                                     
-                                <button onclick="modifierElement(${item.id})" style="margin-top:15px; padding: 8px 15px; font-family: Arial, sans-serif; color: blue; font-size: 1em;">Modifier</button>
-                                <button class="btn-hist" onclick="toggleHistorique(${item.id})">Historique</button>
-                                ${btnClientHtml}                                        
-                                <table id="hist-${item.id}" class="historique-table"></table>                                               
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    });                                                 
+                        const opt = document.createElement('option');
+                        opt.value = item.id;
+                        opt.textContent = item.nom;
+                        selecteur.appendChild(opt);
+                    });
                 });
         }
 
-        // Gestion du sélecteur de type corrigée
-        if (!parentId) {
-            titre.innerText = "Marchés Gros";
-            select.innerHTML = '<option value="ZONE">ZONE</option>';
-        } else {
-            fetch('/api/elements')
-                .then(r => r.json())
-                .then(all => {
-                    const parent = all.find(i => i.id == parentId);
-                    if (parent && parent.type === 'ZONE') {
-                        titre.innerText = "Marchés Relais";
-                        select.innerHTML = '<option value="RELAIS">RELAIS</option>';
-                    } else {
-                        titre.innerText = "Petits Marchés";
-                        select.innerHTML = '<option value="SOUS_MARCHE">SOUS_MARCHE</option>';
-                    }
-                });
+        function configurerTypes() {
+            if (!parentId) {
+                titre.innerText = "Marchés Gros";
+                typeSelect.innerHTML = '<option value="ZONE">ZONE</option>';
+            } else {
+                fetch('/api/elements')
+                    .then(r => r.json())
+                    .then(all => {
+                        const parent = all.find(i => i.id == parentId);
+                        if (parent && parent.type === 'ZONE') {
+                            titre.innerText = "Marchés Relais";
+                            typeSelect.innerHTML = '<option value="RELAIS">RELAIS</option>';
+                        } else {
+                            titre.innerText = "Petits Marchés";
+                            typeSelect.innerHTML = '<option value="SOUS_MARCHE">SOUS_MARCHE</option>';
+                        }
+                    });
+            }
         }
-        
-        chargerElements();                      
-        
+
+        function chargerHistorique(id) {
+            fetch(`/api/historique/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const histDiv = document.getElementById('hist-' + id);
+                let html = '<tr><th>M. Entrée</th><th>Qté</th><th>M. Sortie</th><th>Qté</th><th>Date Modif.</th></tr>';
+                data.forEach(row => {
+                    html += `<tr><td>${row.marchandise_entree}</td><td>${row.quantite_entree}</td><td>${row.marchandise_sortie}</td><td>${row.quantite_sortie}</td><td>${row.date_modification}</td></tr>`;
+                });
+                histDiv.innerHTML = html;
+            });
+        }
+
+        function toggleHistorique(id) {
+            const hist = document.getElementById('hist-' + id);
+            if(hist.style.display === 'table') hist.style.display = 'none';
+            else { hist.style.display = 'table'; chargerHistorique(id); }
+        }
+
+        function versClients(id) { window.location.href = 'client.html?marche_id=' + id; }
+
+        chargerElements();
+        configurerTypes();
+
         function ajouterElement() {
             const data = {
                 code: document.getElementById('code-input').value,
                 nom: document.getElementById('nom-input').value,
                 ville: document.getElementById('ville-input').value,
                 quartier: document.getElementById('quartier-input').value,
-                capacite_totale: document.getElementById('capacite-input').value,
+                capacite_totale: capaciteInput.value,
                 gestionnaire: document.getElementById('gestionnaire-input').value,
                 marchandise_entree: document.getElementById('marchandise-entree-input').value,
                 quantite_entree: document.getElementById('quantite-entree-input').value,
@@ -208,10 +211,10 @@
                 marchandise_sortie: document.getElementById('marchandise-sortie-input').value,
                 quantite_sortie: document.getElementById('quantite-sortie-input').value,
                 date_sortie: document.getElementById('date-sortie-input').value,
-                type: document.getElementById('type-select').value,
+                type: typeSelect.value,
                 parent_id: parentId
             };
-            
+
             fetch('/ajouter-element', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -223,24 +226,17 @@
         }
 
         async function modifierElement(id) {
-            const res = await fetch(`/api/elements?parent_id=${parentId || ''}`);
-            const data = await res.json();
-            const item = data.find(i => i.id == id);
+            const item = tousLesElements.find(i => i.id == id);
             const m_entree = prompt("Marchandise stockée :", item.marchandise_entree || "");
             const q_entree = prompt("Quantité entrée (T) :", item.quantite_entree || 0);
             const m_sortie = prompt("Marchandise évacuée :", item.marchandise_sortie || "");
             const q_sortie = prompt("Quantité sortie (T) :", item.quantite_sortie || 0);
-            
+
             if (m_entree !== null) {
                 fetch(`/api/elements/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nom: item.nom, code: item.code, ville: item.ville, quartier: item.quartier,
-                        capacite_totale: item.capacite_totale, gestionnaire: item.gestionnaire,
-                        marchandise_entree: m_entree, quantite_entree: q_entree,
-                        marchandise_sortie: m_sortie, quantite_sortie: q_sortie
-                    })
+                    body: JSON.stringify({ ...item, marchandise_entree: m_entree, quantite_entree: q_entree, marchandise_sortie: m_sortie, quantite_sortie: q_sortie })
                 }).then(() => chargerElements());
             }
         }
