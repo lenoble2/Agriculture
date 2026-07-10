@@ -13,22 +13,14 @@
         .republique-text { font-weight: bold; font-size: 0.6em; margin: 5px 0 0 0; color: #000; white-space: nowrap; }
         .devise-text { font-size: 0.7em; margin: 2px 0; color: #000; }
         .titre-marche { color: #2c3e50; font-size: 2em; margin: 0; }
-        
         .element-item { margin: 10px auto; padding: 25px; border: 1px solid #ccc; background: white; width: 95%; max-width: 1000px; border-radius: 5px; }
         .btn-supp { color: red; cursor: pointer; float: right; font-weight: bold; font-size: 1.5em; }
         .details-marche { font-size: 1.3em; color: blue; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.8; }
         .label-noir { color: black; font-weight: bold; }
-        
         input, select { display: block; margin: 10px auto; width: 95%; max-width: 500px; padding: 12px; font-family: Arial, sans-serif; color: blue; font-size: 1em; }
         #form-container { display: none; margin: 20px auto; padding: 20px; border: 1px solid #ddd; width: 95%; max-width: 500px; background: white; }
-        
-        .btn-classique { 
-            background: #27ae60; color: white; padding: 10px 20px; border: none; 
-            border-radius: 10px; cursor: pointer; font-size: 1em; font-family: Arial, sans-serif; 
-            font-weight: bold; text-decoration: none; display: inline-block; transition: 0.3s;
-        }
+        .btn-classique { background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-size: 1em; font-family: Arial, sans-serif; font-weight: bold; text-decoration: none; display: inline-block; transition: 0.3s; }
         .btn-classique:hover { background: #219150; }
-        
         .controls-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px 2.5%; align-items: center; }
         .historique-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; font-size: 0.9em; }
         .historique-table th { border: 1px solid #ddd; padding: 8px; text-align: left; color: black; background-color: #f2f2f2; }
@@ -37,7 +29,6 @@
     </style>
 </head>
 <body>
-
     <div class="header-container">
         <div class="header-left"><img src="eagri.jpg" alt="Logo e-agri" class="logo-header"></div>
         <div class="header-center"><h1 id="titre-principal" class="titre-marche">Marchés Gros</h1></div>
@@ -47,7 +38,6 @@
             <p class="devise-text">Union-Discipline-Travail</p>
         </div>
     </div>
-
     <div class="controls-container">
         <button id="btn-ajout" class="btn-classique" onclick="toggleForm()">➕ Ajouter Marchés</button>
         <a href="control_panel.html" class="btn-classique">Administrateur</a>
@@ -56,13 +46,11 @@
             <option value="">-- Sélectionner un marché --</option>
         </select>
     </div>
-
     <div id="form-container">
         <input type="text" id="code-input" placeholder="Code du marché">
         <input type="text" id="nom-input" placeholder="Nom du Marché">
         <input type="text" id="ville-input" placeholder="Ville">
         <input type="text" id="quartier-input" placeholder="Quartier">
-        <!-- Champ capacité avec id pour le rendre dynamique -->
         <input type="text" id="capacite-input" placeholder="Capacité totale (tonne)">
         <input type="text" id="gestionnaire-input" placeholder="Gestionnaire">
         <input type="text" id="marchandise-entree-input" placeholder="Marchandise stockée (ex: Riz)">
@@ -74,7 +62,6 @@
         <select id="type-select"></select>
         <button onclick="ajouterElement()" class="btn-classique" style="width: 95%; max-width: 500px; margin: 15px auto; display: block; padding: 12px; font-size: 1.1em; cursor:pointer;">Enregistrer</button>
     </div>
-
     <div id="liste-elements"></div>
 
     <script>
@@ -92,12 +79,6 @@
         if (depth >= 4) btnAjout.style.display = 'none';
 
         function toggleForm() {
-            // Si on ajoute un élément, on bloque la capacité si un parent existe
-            if (parentId) {
-                capaciteInput.readOnly = false;
-            } else {
-                capaciteInput.readOnly = false;
-            }
             formContainer.style.display = (formContainer.style.display === 'block') ? 'none' : 'block';
         }
 
@@ -105,27 +86,28 @@
             const container = document.getElementById('liste-elements');
             container.innerHTML = '';
             if (!id) return;
-
             const item = tousLesElements.find(i => i.id == id);
             if (!item) return;
 
-            // Calcul dynamique de la capacité (somme des enfants)
             const enfants = tousLesElements.filter(e => e.parent_id == item.id);
-            const capaciteCalculee = enfants.length > 0 
-                ? enfants.reduce((sum, e) => sum + (parseFloat(e.capacite_totale) || 0), 0) 
-                : item.capacite_totale;
-
+            const totalStock = enfants.reduce((sum, e) => sum + (parseFloat(e.quantite_entree) || 0), 0);
+            const totalEvacuation = enfants.reduce((sum, e) => sum + (parseFloat(e.quantite_sortie) || 0), 0);
+            const stockRestant = totalStock - totalEvacuation;
+            
             const btnClientHtml = item.type === 'SOUS_MARCHE' ? `<button class="btn-classique" onclick="versClients(${item.id})" style="padding: 5px 10px; font-size: 0.8em;">Liste clients</button>` : '';
             const div = document.createElement('div');
             div.className = 'element-item';
             div.innerHTML = `
                 <span class="btn-supp" onclick="supprimerElement(${item.id})">X</span>
                 <strong style="font-size: 1.3em;"><a href="?parent_id=${item.id}&depth=${depth + 1}">${item.nom || 'Sans nom'}</a></strong>
+                <div style="margin-top: 5px; font-weight: bold; font-size: 1.2em;">
+                    ${enfants.length > 0 ? `<span style="color: red;">Total Stock: ${totalStock} T</span> | Évacuation: ${totalEvacuation} T | <span style="color: orange;">Stock restant: ${stockRestant} T</span>` : ''}
+                </div>
                 <div class="details-marche">
                     <span class="label-noir">Code:</span> ${item.code || 'N/A'}<br>
                     <span class="label-noir">Ville:</span> ${item.ville || 'N/A'}<br>
                     <span class="label-noir">Quartier:</span> ${item.quartier || 'N/A'}<br>
-                    <span class="label-noir">Capacité:</span> ${capaciteCalculee} T ${enfants.length > 0 ? '<small style="color:gray;">(Automatique)</small>' : ''}<br>
+                    <span class="label-noir">Capacité:</span> ${item.capacite_totale || 0} T<br>
                     <span class="label-noir">Gestionnaire:</span> ${item.gestionnaire || 'N/A'}<br>
                     <strong style="color: red;">Stockage:</strong> ${item.marchandise_entree || 'Aucun'} (${item.quantite_entree || 0}T) - <small>${item.date_entree || 'N/A'}</small><br>
                     <strong style="color: green;">Évacuation:</strong> ${item.marchandise_sortie || 'Aucun'} (${item.quantite_sortie || 0}T) - <small>${item.date_sortie || 'N/A'}</small><br>
@@ -133,18 +115,18 @@
                     <button class="btn-classique" onclick="toggleHistorique(${item.id})" style="padding: 5px 10px; font-size: 0.8em;">Historique</button>
                     ${btnClientHtml}
                     <table id="hist-${item.id}" class="historique-table"></table>
-                </div>
-            `;
+                </div>`;
             container.appendChild(div);
         }
 
         function chargerElements() {
-            fetch(`/api/elements?parent_id=${parentId || ''}&t=${Date.now()}`)
+            fetch(`/api/elements?t=${Date.now()}`)
                 .then(res => res.json())
                 .then(data => {
                     tousLesElements = data;
                     selecteur.innerHTML = '<option value="">-- Choisir un marché --</option>';
-                    data.forEach(item => {
+                    const filtered = data.filter(item => (parentId ? item.parent_id == parentId : item.parent_id == null));
+                    filtered.forEach(item => {
                         const opt = document.createElement('option');
                         opt.value = item.id;
                         opt.textContent = item.nom;
@@ -158,32 +140,28 @@
                 titre.innerText = "Marchés Gros";
                 typeSelect.innerHTML = '<option value="ZONE">ZONE</option>';
             } else {
-                fetch('/api/elements')
-                    .then(r => r.json())
-                    .then(all => {
-                        const parent = all.find(i => i.id == parentId);
-                        if (parent && parent.type === 'ZONE') {
-                            titre.innerText = "Marchés Relais";
-                            typeSelect.innerHTML = '<option value="RELAIS">RELAIS</option>';
-                        } else {
-                            titre.innerText = "Petits Marchés";
-                            typeSelect.innerHTML = '<option value="SOUS_MARCHE">SOUS_MARCHE</option>';
-                        }
-                    });
+                const parent = tousLesElements.find(i => i.id == parentId);
+                if (parent && parent.type === 'ZONE') {
+                    titre.innerText = "Marchés Relais";
+                    typeSelect.innerHTML = '<option value="RELAIS">RELAIS</option>';
+                } else {
+                    titre.innerText = "Petits Marchés";
+                    typeSelect.innerHTML = '<option value="SOUS_MARCHE">SOUS_MARCHE</option>';
+                }
             }
         }
 
         function chargerHistorique(id) {
             fetch(`/api/historique/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                const histDiv = document.getElementById('hist-' + id);
-                let html = '<tr><th>M. Entrée</th><th>Qté</th><th>M. Sortie</th><th>Qté</th><th>Date Modif.</th></tr>';
-                data.forEach(row => {
-                    html += `<tr><td>${row.marchandise_entree}</td><td>${row.quantite_entree}</td><td>${row.marchandise_sortie}</td><td>${row.quantite_sortie}</td><td>${row.date_modification}</td></tr>`;
+                .then(res => res.json())
+                .then(data => {
+                    const histDiv = document.getElementById('hist-' + id);
+                    let html = '<tr><th>M. Entrée</th><th>Qté</th><th>M. Sortie</th><th>Qté</th><th>Date Modif.</th></tr>';
+                    data.forEach(row => {
+                        html += `<tr><td>${row.marchandise_entree}</td><td>${row.quantite_entree}</td><td>${row.marchandise_sortie}</td><td>${row.quantite_sortie}</td><td>${row.date_modification}</td></tr>`;
+                    });
+                    histDiv.innerHTML = html;
                 });
-                histDiv.innerHTML = html;
-            });
         }
 
         function toggleHistorique(id) {
@@ -194,8 +172,13 @@
 
         function versClients(id) { window.location.href = 'client.html?marche_id=' + id; }
 
-        chargerElements();
-        configurerTypes();
+        fetch(`/api/elements?t=${Date.now()}`)
+            .then(res => res.json())
+            .then(data => {
+                tousLesElements = data;
+                chargerElements();
+                configurerTypes();
+            });
 
         function ajouterElement() {
             const data = {
@@ -214,7 +197,6 @@
                 type: typeSelect.value,
                 parent_id: parentId
             };
-
             fetch('/ajouter-element', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

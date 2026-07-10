@@ -194,17 +194,17 @@ app.get('/', (req, res) => {
 
 
 
-// Routes API Marchés
+// Remplacez votre route existante par celle-ci dans server.js
 app.get('/api/elements', async (req, res) => {
     try {
-        const parentId = req.query.parent_id;
-        let sql = "SELECT * FROM marches_hierarchie";
-        let params = [];
-        if (parentId && parentId !== '') { sql += " WHERE parent_id = ?"; params.push(parentId); } else { sql += " WHERE parent_id IS NULL"; }
-        const [results] = await db.execute(sql, params);
+        // On récupère TOUS les éléments sans filtre pour permettre le calcul côté client
+        const [results] = await db.execute("SELECT * FROM marches_hierarchie");
         res.json(results);
-    } catch (err) { res.status(500).send(err); }
+    } catch (err) { 
+        res.status(500).send(err); 
+    }
 });
+
 
 app.get('/api/historique/:id', async (req, res) => {
     try {
