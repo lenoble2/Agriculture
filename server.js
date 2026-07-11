@@ -68,10 +68,12 @@ const upload = multer({ storage: storage });
 
 // Initialisation des tables
 async function initialiserBaseDeDonnees() {
+    // Déclaration unique de la table avec la nouvelle colonne type_produit
     const tableHierarchie = `CREATE TABLE IF NOT EXISTS marches_hierarchie (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nom VARCHAR(100),
         type ENUM('ZONE', 'RELAIS', 'SOUS_MARCHE'),
+        type_produit VARCHAR(50), 
         parent_id INT,
         code VARCHAR(50),
         ville VARCHAR(100),
@@ -96,9 +98,7 @@ async function initialiserBaseDeDonnees() {
         date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`;
 
-
-// Table clients avec tous les nouveaux champs y compris situation matrimoniale
-const tableClients = `CREATE TABLE IF NOT EXISTS clients (
+    const tableClients = `CREATE TABLE IF NOT EXISTS clients (
         id INT AUTO_INCREMENT PRIMARY KEY,
         marche_id INT,
         nom_prenoms VARCHAR(255),
@@ -123,7 +123,6 @@ const tableClients = `CREATE TABLE IF NOT EXISTS clients (
         num_recruteur VARCHAR(50)
     )`;
 
-
     const tableCodes = `CREATE TABLE IF NOT EXISTS codes_recruteurs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         tel VARCHAR(20) NOT NULL,
@@ -141,6 +140,8 @@ const tableClients = `CREATE TABLE IF NOT EXISTS clients (
         console.error("Erreur d'initialisation :", err);
     }
 }
+
+
 
 // Route API RECRUTER-CLIENT avec gestion de fichiers multiples
 const cpUpload = upload.fields([
@@ -213,14 +214,34 @@ app.get('/api/historique/:id', async (req, res) => {
     } catch (err) { res.status(500).send(err); }
 });
 
+
 app.post('/ajouter-element', async (req, res) => {
     try {
-        const { nom, type, parent_id, code, ville, quartier, capacite_totale, gestionnaire, marchandise_entree, quantite_entree, date_entree, marchandise_sortie, quantite_sortie, date_sortie } = req.body;
-        await db.execute(`INSERT INTO marches_hierarchie (nom, type, parent_id, code, ville, quartier, capacite_totale, gestionnaire, marchandise_entree, quantite_entree, date_entree, marchandise_sortie, quantite_sortie, date_sortie) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-        [nom, type, parent_id, code, ville, quartier, capacite_totale, gestionnaire, marchandise_entree, quantite_entree, date_entree, marchandise_sortie, quantite_sortie, date_sortie]);
+        const { 
+            nom, type, type_produit, parent_id, code, ville, quartier, 
+            capacite_totale, gestionnaire, marchandise_entree, 
+            quantite_entree, date_entree, marchandise_sortie, 
+            quantite_sortie, date_sortie 
+        } = req.body;
+
+        const sql = `INSERT INTO marches_hierarchie 
+            (nom, type, type_produit, parent_id, code, ville, quartier, capacite_totale, gestionnaire, marchandise_entree, quantite_entree, date_entree, marchandise_sortie, quantite_sortie, date_sortie) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            
+        await db.execute(sql, [
+            nom, type, type_produit, parent_id, code, ville, quartier, 
+            capacite_totale, gestionnaire, marchandise_entree, 
+            quantite_entree, date_entree, marchandise_sortie, 
+            quantite_sortie, date_sortie
+        ]);
+        
         res.status(201).send({ success: true });
-    } catch (err) { res.status(500).send("Erreur : " + err.message); }
+    } catch (err) { 
+        console.error("Erreur ajout élément :", err);
+        res.status(500).send("Erreur : " + err.message); 
+    }
 });
+
 
 app.delete('/api/elements/:id', async (req, res) => {
     try {
@@ -320,3 +341,26 @@ app.post('/api/login-admin', (req, res) => {
         res.status(401).json({ success: false, message: "Mot de passe incorrect" });
     }
 });
+
+
+// Ajoutez ceci dans server.js, près de vos autres routes app.get/app.post
+app.get('/api/types', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM types_produits');
+        res.json(rows);
+    } catch (err) {
+        console.error("Erreur lors de la récupération des types :", err);
+        res.status(500).send(err);
+    }
+});
+
+
+// Route pour ajouter un type
+app.post('/ajouter-type', async (req, res) => {
+    const { nom_produit } = req.body;
+    try {
+        await db.execute('INSERT INTO types_produits (nom_produit) VALUES (?)', [nom_produit]);
+        res.status(200).send("Type ajouté");
+    } catch (err) { res.status(500).send(err); }
+});
+
