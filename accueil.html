@@ -25,7 +25,7 @@
         .historique-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; font-size: 0.9em; }
         .historique-table th { border: 1px solid #ddd; padding: 8px; text-align: left; color: black; background-color: #f2f2f2; }
         .historique-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        #selecteur-marche { margin: 10px 0; padding: 10px; width: 300px; border-radius: 20px; }
+        #selecteur-marche, #type-produit-select { margin: 10px 0; padding: 10px; width: 200px; border-radius: 20px; border: 1px solid #27ae60; }
     </style>
 </head>
 <body>
@@ -43,7 +43,14 @@
         <a href="control_panel.html" class="btn-classique">Administrateur</a>
         <a href="code.html" class="btn-classique">Code</a>
         <select id="selecteur-marche" onchange="afficherElementSelectionne(this.value)">
-            <option value="">-- Sélectionner un marché --</option>
+            <option value="">-- Marché --</option>
+        </select>
+        <div style="display: flex; gap: 5px; align-items: center;">
+            <input type="text" id="nouveau-type-input" placeholder="Nouveau produit..." style="width: 150px; margin: 0;">
+            <button class="btn-classique" onclick="ajouterTypeProduit()">Ajouter type</button>
+        </div>
+        <select id="type-produit-select">
+            <option value="">-- Type Produit --</option>
         </select>
     </div>
     <div id="form-container">
@@ -63,7 +70,7 @@
         <button onclick="ajouterElement()" class="btn-classique" style="width: 95%; max-width: 500px; margin: 15px auto; display: block; padding: 12px; font-size: 1.1em; cursor:pointer;">Enregistrer</button>
     </div>
     <div id="liste-elements"></div>
-
+                                                               
     <script>
         const params = new URLSearchParams(window.location.search);
         const parentId = params.get('parent_id');
@@ -73,27 +80,90 @@
         const formContainer = document.getElementById('form-container');
         const btnAjout = document.getElementById('btn-ajout');
         const selecteur = document.getElementById('selecteur-marche');
-        const capaciteInput = document.getElementById('capacite-input');
-        let tousLesElements = [];
-
+        const typeProduitSelect = document.getElementById('type-produit-select');
+        
         if (depth >= 4) btnAjout.style.display = 'none';
+        let tousLesElements = [];
 
         function toggleForm() {
             formContainer.style.display = (formContainer.style.display === 'block') ? 'none' : 'block';
         }
 
-        function afficherElementSelectionne(id) {
+        function ajouterTypeProduit() {
+            const input = document.getElementById('nouveau-type-input');
+            const val = input.value.trim();
+            if (val) {
+                fetch('/ajouter-type', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nom_produit: val })
+                }).then(() => {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = "Marchés " + val;
+                    typeProduitSelect.appendChild(opt);
+                    input.value = '';
+                }).catch(err => console.error("Erreur lors de l'ajout du type:", err));
+            }
+        }
+
+        function chargerTypesDepuisBD() {
+            fetch('/api/types')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.nom_produit;
+                        opt.textContent = "Marchés " + item.nom_produit;
+                        typeProduitSelect.appendChild(opt);
+                    });
+                    const urlType = new URLSearchParams(window.location.search).get('type');
+                    if(urlType) {
+                        typeProduitSelect.value = urlType;
+                        rafraichirInterface(urlType);
+                    }
+                })
+                .catch(err => console.error("Erreur de connexion base de données (Types) :", err));
+        }
+
+        typeProduitSelect.addEventListener('change', function() {
+            const typeProduit = this.value;
+            const url = new URL(window.location);
+            if (typeProduit) url.searchParams.set('type', typeProduit);
+            else url.searchParams.delete('type');
+            window.history.pushState({}, '', url);
+            rafraichirInterface(typeProduit);
+        });
+
+        function rafraichirInterface(type) {
+            filtrerParType(type);
+            mettreAJourSelecteur(type);
+        }
+
+        function filtrerParType(type) {
             const container = document.getElementById('liste-elements');
             container.innerHTML = '';
-            if (!id) return;
-            const item = tousLesElements.find(i => i.id == id);
-            if (!item) return;
+            const elementsFiltres = type === "" ? tousLesElements.filter(item => (parentId ? item.parent_id == parentId : item.parent_id == null)) : tousLesElements.filter(el => el.type_produit === type);
+            elementsFiltres.forEach(item => renderElement(item));
+        }
 
+        function mettreAJourSelecteur(type) {
+            selecteur.innerHTML = '<option value="">-- Choisir un marché --</option>';
+            const elementsFiltres = type === "" ? tousLesElements.filter(item => (parentId ? item.parent_id == parentId : item.parent_id == null)) : tousLesElements.filter(el => el.type_produit === type);
+            elementsFiltres.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = item.nom;
+                selecteur.appendChild(opt);
+            });
+        }
+
+        function renderElement(item) {
+            const container = document.getElementById('liste-elements');
             const enfants = tousLesElements.filter(e => e.parent_id == item.id);
             const totalStock = enfants.reduce((sum, e) => sum + (parseFloat(e.quantite_entree) || 0), 0);
             const totalEvacuation = enfants.reduce((sum, e) => sum + (parseFloat(e.quantite_sortie) || 0), 0);
             const stockRestant = totalStock - totalEvacuation;
-            
             const btnClientHtml = item.type === 'SOUS_MARCHE' ? `<button class="btn-classique" onclick="versClients(${item.id})" style="padding: 5px 10px; font-size: 0.8em;">Liste clients</button>` : '';
             const div = document.createElement('div');
             div.className = 'element-item';
@@ -119,20 +189,22 @@
             container.appendChild(div);
         }
 
+        function afficherElementSelectionne(id) {
+            const container = document.getElementById('liste-elements');
+            container.innerHTML = '';
+            if (!id) return;
+            const item = tousLesElements.find(i => i.id == id);
+            if (item) renderElement(item);
+        }
+
         function chargerElements() {
             fetch(`/api/elements?t=${Date.now()}`)
                 .then(res => res.json())
                 .then(data => {
                     tousLesElements = data;
-                    selecteur.innerHTML = '<option value="">-- Choisir un marché --</option>';
-                    const filtered = data.filter(item => (parentId ? item.parent_id == parentId : item.parent_id == null));
-                    filtered.forEach(item => {
-                        const opt = document.createElement('option');
-                        opt.value = item.id;
-                        opt.textContent = item.nom;
-                        selecteur.appendChild(opt);
-                    });
-                });
+                    rafraichirInterface(typeProduitSelect.value);
+                })
+                .catch(err => console.error("Erreur chargement éléments:", err));
         }
 
         function configurerTypes() {
@@ -178,7 +250,9 @@
                 tousLesElements = data;
                 chargerElements();
                 configurerTypes();
-            });
+                chargerTypesDepuisBD();
+            })
+            .catch(err => alert("Erreur réseau : Le serveur ne répond pas. Vérifiez votre connexion."));
 
         function ajouterElement() {
             const data = {
@@ -186,7 +260,7 @@
                 nom: document.getElementById('nom-input').value,
                 ville: document.getElementById('ville-input').value,
                 quartier: document.getElementById('quartier-input').value,
-                capacite_totale: capaciteInput.value,
+                capacite_totale: document.getElementById('capacite-input').value,
                 gestionnaire: document.getElementById('gestionnaire-input').value,
                 marchandise_entree: document.getElementById('marchandise-entree-input').value,
                 quantite_entree: document.getElementById('quantite-entree-input').value,
@@ -195,6 +269,7 @@
                 quantite_sortie: document.getElementById('quantite-sortie-input').value,
                 date_sortie: document.getElementById('date-sortie-input').value,
                 type: typeSelect.value,
+                type_produit: document.getElementById('type-produit-select').value,
                 parent_id: parentId
             };
             fetch('/ajouter-element', {
@@ -213,7 +288,6 @@
             const q_entree = prompt("Quantité entrée (T) :", item.quantite_entree || 0);
             const m_sortie = prompt("Marchandise évacuée :", item.marchandise_sortie || "");
             const q_sortie = prompt("Quantité sortie (T) :", item.quantite_sortie || 0);
-
             if (m_entree !== null) {
                 fetch(`/api/elements/${id}`, {
                     method: 'PUT',
